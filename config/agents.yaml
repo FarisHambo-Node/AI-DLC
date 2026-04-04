@@ -1,0 +1,99 @@
+# AI-DLC Agent Configuration
+# ----------------------------
+# Control which agents are active, which LLM they use, and gate timeouts.
+
+project:
+  jira_project_key: "PROJ"
+  github_org: "my-org"
+  default_repo: "my-org/my-app"
+  base_branch: "main"
+
+agents:
+  intake_agent:
+    enabled: true
+    llm_profile: sonnet
+    notify_channel: "#dev-agents"
+    jira_issue_type: "Story"
+
+  planning_agent:
+    enabled: true
+    llm_profile: sonnet
+    max_subtasks: 5
+
+  code_agent:
+    enabled: true
+    llm_profile: sonnet
+    max_files_per_commit: 10
+    max_retries: 3
+    branch_prefix: "feature"
+
+  test_agent:
+    enabled: true
+    llm_profile: sonnet
+    frameworks:
+      - jest        # JavaScript/TypeScript
+      - pytest      # Python
+      - playwright  # E2E
+    min_coverage_pct: 80
+
+  pr_agent:
+    enabled: true
+    llm_profile: sonnet
+    labels:
+      - ai-generated
+      - needs-review
+    max_reviewers: 2
+
+  review_agent:
+    enabled: true
+    llm_profile: sonnet
+    max_diff_chars: 60000
+    post_inline_comments: true
+
+  cicd_agent:
+    enabled: true
+    llm_profile: haiku
+    staging_env: "staging"
+    production_env: "production"
+    deployment_strategy: "canary"  # canary | rolling | recreate
+
+  qa_agent:
+    enabled: true
+    llm_profile: sonnet
+    run_e2e: true
+    run_api_tests: true
+    block_on_critical_failure: true
+
+  bugfix_agent:
+    enabled: true
+    llm_profile: sonnet
+    branch_prefix: "fix"
+
+  feedback_agent:
+    enabled: true
+    llm_profile: haiku               # cheap — runs hourly
+    sentry_project: "my-app"
+    schedule_hours: 1
+    on_call_channel: "#on-call"
+    dev_channel: "#dev-agents"
+
+human_gates:
+  pm_review:
+    timeout_hours: 48
+    reminder_hours: 24
+    on_timeout: "move_to_backlog"    # move_to_backlog | auto_approve | escalate
+
+  tech_lead_review:
+    timeout_hours: 24
+    reminder_hours: 12
+    on_timeout: "escalate"
+
+  pr_review:
+    timeout_hours: 24
+    reminder_hours: 8
+    on_timeout: "escalate"
+    min_approvals: 1
+
+  prod_deploy:
+    timeout_hours: null             # null = no timeout — must be explicit
+    on_timeout: "block"

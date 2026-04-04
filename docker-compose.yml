@@ -1,0 +1,114 @@
+# AI-DLC — Local Development Stack
+# ----------------------------------
+# Runs the full pipeline locally.
+# Secrets come from .env.local (NOT from Vault in local mode).
+#
+# Usage:
+#   cp .env.example .env.local
+#   # fill in your keys
+#   docker compose up
+
+version: "3.9"
+
+x-agent-base: &agent-base
+  build:
+    context: .
+    dockerfile: infrastructure/docker/Dockerfile.agent
+  env_file: .env.local
+  depends_on:
+    redis:
+      condition: service_healthy
+  networks:
+    - ai-dlc
+  restart: unless-stopped
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [ai-dlc]
+
+  # ---------------------------------------------------------------------------
+  # Webhook receivers (single FastAPI app exposing all webhook routes)
+  # ---------------------------------------------------------------------------
+
+  webhook-server:
+    <<: *agent-base
+    command: uvicorn orchestration.webhooks.main:app --host 0.0.0.0 --port 8000 --reload
+    ports: ["8000:8000"]
+    volumes:
+      - .:/app   # hot reload in dev
+    environment:
+      APP_ENV: local
+
+  # ---------------------------------------------------------------------------
+  # Agents (each runs as a separate service)
+  # ---------------------------------------------------------------------------
+
+  intake-agent:
+    <<: *agent-base
+    command: python -m agents.intake_agent.main
+    environment:
+      AGENT_NAME: intake-agent
+
+  planning-agent:
+    <<: *agent-base
+    command: python -m agents.planning_agent.main
+    environment:
+      AGENT_NAME: planning-agent
+
+  code-agent:
+    <<: *agent-base
+    command: python -m agents.code_agent.main
+    environment:
+      AGENT_NAME: code-agent
+
+  test-agent:
+    <<: *agent-base
+    command: python -m agents.test_agent.main
+    environment:
+      AGENT_NAME: test-agent
+
+  pr-agent:
+    <<: *agent-base
+    command: python -m agents.pr_agent.main
+    environment:
+      AGENT_NAME: pr-agent
+
+  review-agent:
+    <<: *agent-base
+    command: python -m agents.review_agent.main
+    environment:
+      AGENT_NAME: review-agent
+
+  cicd-agent:
+    <<: *agent-base
+    command: python -m agents.cicd_agent.main
+    environment:
+      AGENT_NAME: cicd-agent
+
+  qa-agent:
+    <<: *agent-base
+    command: python -m agents.qa_agent.main
+    environment:
+      AGENT_NAME: qa-agent
+
+  feedback-agent:
+    <<: *agent-base
+    command: python -m agents.feedback_agent.main
+    environment:
+      AGENT_NAME: feedback-agent
+
+networks:
+  ai-dlc:
+    driver: bridge
