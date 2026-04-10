@@ -42,7 +42,7 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 **What goes in:** Raw input from the user (chat message, pasted spec, uploaded document).
 
 **What happens:**
-- The **Document Agent** reads the input and produces structured ticket proposals (title, description, acceptance criteria, story points, labels).
+- The **Document Agent** reads the business requirement text input, writes a short technical implementation plan, and produces structured ticket proposals (title, description, acceptance criteria, story points, labels).
 - Multiple tickets can be proposed from a single message — a feature request might break into 3 tickets automatically.
 - All proposed tickets land in this queue in a `pending_review` state.
 
@@ -58,7 +58,6 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 **What goes in:** Approved tickets from the Requirements Queue.
 
 **What happens:**
-- The **Planning Agent** reads each ticket and writes a short technical implementation plan (which files, which patterns, what risks).
 - The **Coding Agent** picks up the ticket, creates a feature branch, and implements the solution.
 - Multiple Coding Agents can work in parallel — the number is configurable per project.
 - The **Testing Agent** runs alongside and generates unit + integration + E2E test cases. It actively looks for edge cases and failure paths, not just happy paths.
@@ -75,8 +74,7 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 **What goes in:** Feature branches where coding + automated test generation is complete.
 
 **What happens:**
-- The **Versioning Agent** opens a Pull Request with a structured description (summary, changes, acceptance criteria coverage, test results).
-- The **Review Agent** performs an automated first-pass review — security, performance, missing error handling, style — and posts inline PR comments.
+- The **Versioning/Review Agent** opens a Pull Request with a structured description (summary, changes, acceptance criteria coverage, test results). Afterwards, it performs an automated first-pass review — security, performance, missing error handling, style — and posts inline PR comments.
 - The **Testing Agent** runs the full suite against a preview/staging environment and generates a QA report.
 
 **Human gate:**
@@ -136,7 +134,7 @@ Reads an approved ticket + implementation plan, creates a branch, writes the imp
 ### Testing Agent
 Works alongside the Coding Agent. Generates comprehensive tests (happy path, edge cases, failure paths) and runs them against staging. Actively searches for scenarios the ticket didn't specify. Shares findings with the Document Agent for ticket refinement. Can alert humans and other agents if something is wrong or missing.
 
-### Versioning Agent
+### Versioning/Review Agent
 Manages everything Git and PR related: creates PRs with structured descriptions, assigns reviewers via CODEOWNERS, keeps branches up to date with the base branch, handles merge conflicts where possible. Requires human input for final PR approval.
 
 ### DevOps Agent
