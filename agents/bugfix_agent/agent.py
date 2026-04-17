@@ -28,13 +28,13 @@ You are a senior engineer performing root cause analysis on a production bug.
 
 Given the bug report (title, description, stack trace, steps to reproduce),
 identify:
-1. root_cause — the specific code location and reason for the bug (file path, function name)
-2. fix_description — what needs to change and why
-3. regression_test_description — describe a test that would have caught this bug
+1. root_cause - the specific code location and reason for the bug (file path, function name)
+2. fix_description - what needs to change and why
+3. regression_test_description - describe a test that would have caught this bug
 
 Output JSON:
 {
-  "root_cause": "string — e.g. src/auth/login.py line 42: missing null check on user object",
+  "root_cause": "string - e.g. src/auth/login.py line 42: missing null check on user object",
   "fix_description": "string",
   "regression_test_description": "string"
 }
@@ -64,7 +64,7 @@ class BugfixAgent:
         fix_desc    = analysis.get("fix_description", "")
         test_desc   = analysis.get("regression_test_description", "")
 
-        logger.info("BugfixAgent: root cause identified — %s", root_cause)
+        logger.info("BugfixAgent: root cause identified - %s", root_cause)
 
         # Write root cause to Jira
         self._jira.add_comment(
@@ -99,7 +99,7 @@ class BugfixAgent:
         import json
 
         prompt = f"""
-Bug ticket: {state.ticket_id} — {state.title}
+Bug ticket: {state.ticket_id} - {state.title}
 
 Description / Steps to Reproduce:
 {state.description}

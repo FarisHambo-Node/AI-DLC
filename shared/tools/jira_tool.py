@@ -1,6 +1,6 @@
 """
 Jira REST API v3 wrapper.
-Agents use this tool for all Jira operations — never call the API directly.
+Agents use this tool for all Jira operations - never call the API directly.
 """
 
 import requests

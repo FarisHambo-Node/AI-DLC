@@ -41,7 +41,7 @@ Output a JSON array of file operations:
 
 Rules:
 - Follow the existing code style and patterns shown in the context
-- Write production-quality code — no TODO placeholders in the output
+- Write production-quality code - no TODO placeholders in the output
 - Keep each file focused and small; prefer many small changes over one large file
 - Every public function must have a docstring
 - Do not output markdown, only the JSON array
@@ -91,7 +91,7 @@ class CodeAgent:
                 try:
                     _, existing_sha = self._github.get_file(state.repo_full_name, file_path, branch=branch_name)
                 except Exception:
-                    existing_sha = None  # file doesn't exist yet — treat as create
+                    existing_sha = None  # file doesn't exist yet - treat as create
 
             commit_result = self._github.commit_file(
                 repo=state.repo_full_name,
@@ -118,7 +118,7 @@ class CodeAgent:
             success=True,
             summary=f"Implemented {len(file_operations)} files on branch {branch_name}",
         )
-        logger.info("CodeAgent: done — branch %s, commit %s", branch_name, last_sha[:8])
+        logger.info("CodeAgent: done - branch %s, commit %s", branch_name, last_sha[:8])
         return state
 
     # -------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class CodeAgent:
         3. Return the top-k most relevant file snippets
         """
         # TODO: replace with vector store semantic search
-        return f"[Context for repo {state.repo_full_name} — semantic search not yet connected]"
+        return f"[Context for repo {state.repo_full_name} - semantic search not yet connected]"
 
     def _generate_code(self, state: TicketState, context: str) -> list[dict]:
         """Invoke the LLM and parse the file operations JSON."""

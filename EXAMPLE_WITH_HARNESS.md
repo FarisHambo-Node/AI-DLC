@@ -82,7 +82,7 @@ flowchart LR
 
 ---
 
-# Step 1 — User Request
+# Step 1 - User Request
 
 User submits a feature request:
 
@@ -106,7 +106,7 @@ The orchestrator creates a workflow item inside the Requirements Queue.
 
 ---
 
-# Step 2 — Requirements Queue
+# Step 2 - Requirements Queue
 
 ## Document Agent Container Executes
 
@@ -189,7 +189,7 @@ Status: pending human approval
 
 ---
 
-# Step 3 — Human Approval Gate
+# Step 3 - Human Approval Gate
 
 Engineer or product owner reviews generated tickets.
 
@@ -211,7 +211,7 @@ Implementation Queue
 
 ---
 
-# Step 4 — Implementation Queue
+# Step 4 - Implementation Queue
 
 ## Coding Agent Container Executes
 
@@ -304,7 +304,7 @@ Testing Queue
 
 ---
 
-# Step 5 — Testing Queue
+# Step 5 - Testing Queue
 
 ## Testing Agent Container Executes
 
@@ -388,9 +388,9 @@ Human Approval Gate
 
 ---
 
-# Step 6 — Automated Security Scan
+# Step 6 - Automated Security Scan
 
-Security scanning runs automatically in parallel with the QA report — no human required to trigger it.
+Security scanning runs automatically in parallel with the QA report - no human required to trigger it.
 
 ## What runs (deterministic tools)
 
@@ -400,7 +400,7 @@ Dependency:  Snyk                 → checks updated packages against CVE databa
 Container:   Trivy                → scans new image builds for known vulnerabilities
 ```
 
-These are deterministic steps. Same input, same output, every time. The LLM does not run the scanner — it interprets the results.
+These are deterministic steps. Same input, same output, every time. The LLM does not run the scanner - it interprets the results.
 
 ## Security Agent (Harness Runtime)
 
@@ -437,7 +437,7 @@ plain-language summary for the PR reviewer
 
 ---
 
-# Step 7 — Pull Request Review Gate
+# Step 7 - Pull Request Review Gate
 
 Engineer reviews all of the following in a single panel:
 
@@ -466,7 +466,7 @@ Deployment Queue
 
 ---
 
-# Step 8 — Deployment Queue
+# Step 8 - Deployment Queue
 
 ## DevOps Agent Container Executes
 
@@ -534,7 +534,7 @@ failure diagnostics (if needed)
 
 ---
 
-# Step 9 — Production Deployment Gate
+# Step 9 - Production Deployment Gate
 
 Production release always requires explicit approval.
 
@@ -554,7 +554,7 @@ Feature becomes live.
 
 ---
 
-# Step 10 — Monitoring Loop (Post-Deploy)
+# Step 10 - Monitoring Loop (Post-Deploy)
 
 After the feature is live, the pipeline does not end.
 
@@ -635,7 +635,7 @@ Monitoring Loop → [incident → Requirements Queue]
 
 ---
 
-## End-to-End Flow — Login Feature Example
+## End-to-End Flow - Login Feature Example
 
 Following the example request *"Add login page with email/password authentication"* through every stage:
 
@@ -689,10 +689,10 @@ flowchart TD
 
 **What to notice in the diagram:**
 
-- Every agent runs inside its own harness with a specific skill invoked (e.g., `implement_feature`, `test_generation`, `security_scan_review`) — thin harness, fat skills
+- Every agent runs inside its own harness with a specific skill invoked (e.g., `implement_feature`, `test_generation`, `security_scan_review`) - thin harness, fat skills
 - Security scan is a dedicated stage with deterministic tools (Semgrep, Snyk, Trivy), not a side-note on a review comment
 - Human gates appear only at the three points where judgment matters: ticket approval, PR review, production deploy
-- The monitoring loop closes back to the Requirements Queue — the SDLC is a cycle, not a one-way pipeline
+- The monitoring loop closes back to the Requirements Queue - the SDLC is a cycle, not a one-way pipeline
 
 ---
 
@@ -705,9 +705,9 @@ Guided by LLM reasoning through skill files (fat)
 Controlled by human approval gates at the right moments
 ```
 
-The harness stays thin — loop, context, tools, safety.
-The skills stay fat — process, judgment, domain knowledge.
+The harness stays thin - loop, context, tools, safety.
+The skills stay fat - process, judgment, domain knowledge.
 The queue controls lifecycle progression.
 The monitoring loop closes the SDLC cycle.
 
-This architecture enables structured, safe, explainable AI-assisted software delivery across the full SDLC pipeline — from user story to production, and back again.
+This architecture enables structured, safe, explainable AI-assisted software delivery across the full SDLC pipeline - from user story to production, and back again.

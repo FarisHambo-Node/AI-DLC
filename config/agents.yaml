@@ -71,7 +71,7 @@ agents:
 
   feedback_agent:
     enabled: true
-    llm_profile: haiku               # cheap — runs hourly
+    llm_profile: haiku               # cheap - runs hourly
     sentry_project: "my-app"
     schedule_hours: 1
     on_call_channel: "#on-call"
@@ -95,5 +95,5 @@ human_gates:
     min_approvals: 1
 
   prod_deploy:
-    timeout_hours: null             # null = no timeout — must be explicit
+    timeout_hours: null             # null = no timeout - must be explicit
     on_timeout: "block"

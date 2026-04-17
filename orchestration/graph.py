@@ -1,5 +1,5 @@
 """
-LangGraph orchestration — the main pipeline graph.
+LangGraph orchestration - the main pipeline graph.
 
 Nodes = agents
 Edges = transitions between agents (conditional based on state)
@@ -22,7 +22,7 @@ from agents.bugfix_agent.agent import BugfixAgent
 
 
 # ---------------------------------------------------------------------------
-# Node functions — each wraps an agent's .run() method
+# Node functions - each wraps an agent's .run() method
 # ---------------------------------------------------------------------------
 
 def node_intake(state: TicketState) -> TicketState:
@@ -54,12 +54,12 @@ def node_cicd_prod(state: TicketState) -> TicketState:
 
 
 # ---------------------------------------------------------------------------
-# Human gate node — pauses the graph until Slack approval arrives
+# Human gate node - pauses the graph until Slack approval arrives
 # ---------------------------------------------------------------------------
 
 def node_wait_pm_approval(state: TicketState) -> TicketState:
     """
-    This node does nothing on its own — it is registered as a LangGraph
+    This node does nothing on its own - it is registered as a LangGraph
     interrupt point. Execution pauses here and resumes when the Slack
     approval webhook calls graph.resume(thread_id, state).
     """
@@ -76,7 +76,7 @@ def node_wait_prod_approval(state: TicketState) -> TicketState:
 
 
 # ---------------------------------------------------------------------------
-# Routing functions — decide which node to go to next
+# Routing functions - decide which node to go to next
 # ---------------------------------------------------------------------------
 
 def route_after_pm_approval(state: TicketState) -> str:
@@ -167,5 +167,5 @@ def compile_pipeline():
     )
 
 
-# Singleton — imported by webhook handlers and the scheduler
+# Singleton - imported by webhook handlers and the scheduler
 pipeline = compile_pipeline()

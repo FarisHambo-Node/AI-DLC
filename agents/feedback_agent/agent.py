@@ -64,7 +64,7 @@ class FeedbackAgent:
         on_call_channel: str = "#on-call",
         dev_channel: str = "#dev-agents",
     ):
-        self._llm         = get_llm(LLMProfile.HAIKU)  # cheap — runs frequently
+        self._llm         = get_llm(LLMProfile.HAIKU)  # cheap - runs frequently
         self._sentry      = SentryTool()
         self._jira        = JiraTool()
         self._slack       = SlackTool()
@@ -155,7 +155,7 @@ class FeedbackAgent:
             fields=["summary", "status"],
         )
         if existing:
-            logger.info("FeedbackAgent: found existing similar ticket %s — skipping", existing[0]["key"])
+            logger.info("FeedbackAgent: found existing similar ticket %s - skipping", existing[0]["key"])
             return None
 
         # --- Step 4: Create Jira bug ticket ---
@@ -187,7 +187,7 @@ class FeedbackAgent:
             self._slack.notify(
                 channel=self._on_call,
                 text=(
-                    f":rotating_light: *CRITICAL BUG* — <{ticket_url}|{ticket_id}>\n"
+                    f":rotating_light: *CRITICAL BUG* - <{ticket_url}|{ticket_id}>\n"
                     f"*{triage['title']}*\n"
                     f"Source: {source}\n"
                     f"Please acknowledge and confirm priority within 1 hour."
@@ -196,7 +196,7 @@ class FeedbackAgent:
         else:
             self._slack.notify(
                 channel=self._dev,
-                text=f":bug: New {severity} bug ticket: <{ticket_url}|{ticket_id}> — {triage['title']}",
+                text=f":bug: New {severity} bug ticket: <{ticket_url}|{ticket_id}> - {triage['title']}",
             )
 
         return ticket_id

@@ -62,7 +62,7 @@ class QAAgent:
         self._slack.notify(
             self._channel,
             f"{icon} *QA complete* for <{state.ticket_url}|{state.ticket_id}>\n"
-            f"{'All tests passed.' if passed else 'Test failures detected — see Jira for details.'}",
+            f"{'All tests passed.' if passed else 'Test failures detected - see Jira for details.'}",
         )
 
         state.test_run_passed = passed
@@ -80,18 +80,18 @@ class QAAgent:
         #     capture_output=True, text=True, timeout=300
         # )
         # return result.stdout + result.stderr
-        return "[Playwright output — runner not yet connected]"
+        return "[Playwright output - runner not yet connected]"
 
     def _run_api_tests(self, staging_url: str) -> str:
         """
         Run Newman (Postman collection) or Pytest API tests.
         TODO: implement actual runner.
         """
-        return "[API test output — runner not yet connected]"
+        return "[API test output - runner not yet connected]"
 
     def _generate_report(self, state: TicketState, raw_output: str) -> str:
         prompt = f"""
-Ticket: {state.ticket_id} — {state.title}
+Ticket: {state.ticket_id} - {state.title}
 Staging URL: {state.staging_url}
 
 Acceptance Criteria:

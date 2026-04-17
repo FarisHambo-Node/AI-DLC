@@ -1,6 +1,6 @@
 """
 GitHub API wrapper using GitHub App authentication.
-Tokens are short-lived (1h) and auto-rotated — no PATs used in production.
+Tokens are short-lived (1h) and auto-rotated - no PATs used in production.
 """
 
 import time

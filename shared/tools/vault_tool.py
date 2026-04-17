@@ -1,6 +1,6 @@
 """
 HashiCorp Vault client wrapper.
-All secrets are read from Vault — never from environment variables directly in prod.
+All secrets are read from Vault - never from environment variables directly in prod.
 For local dev, falls back to .env.local via python-dotenv.
 """
 

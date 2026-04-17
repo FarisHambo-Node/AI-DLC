@@ -67,7 +67,7 @@ class CICDAgent:
         self._jira.update_status(state.ticket_id, "Done")
         self._slack.notify(
             self._channel,
-            f":white_check_mark: *Production deployed* — <{state.ticket_url}|{state.ticket_id}> is live.",
+            f":white_check_mark: *Production deployed* - <{state.ticket_url}|{state.ticket_id}> is live.",
         )
 
         state.record_step(agent="cicd-agent", success=True, summary="Deployed to production")

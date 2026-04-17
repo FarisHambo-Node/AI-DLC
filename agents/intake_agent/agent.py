@@ -101,7 +101,7 @@ class IntakeAgent:
 
         state.record_step(agent="intake-agent", success=True, summary=f"Created {ticket_id}")
 
-        # --- Step 4: Human gate — PM review via Slack ---
+        # --- Step 4: Human gate - PM review via Slack ---
         state.set_gate("pm_review", timeout_hours=48)
         self._slack.request_approval(
             channel=self._channel,

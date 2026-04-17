@@ -28,7 +28,7 @@ Write a clear, concise PR description using this exact markdown structure:
 [2-3 bullet points explaining WHAT changed and WHY]
 
 ## Changes
-[List of files changed and what each does — one line per file]
+[List of files changed and what each does - one line per file]
 
 ## Acceptance Criteria Coverage
 [Tick off each acceptance criterion from the ticket]
@@ -104,7 +104,7 @@ class PRAgent:
         self._slack.notify(
             channel=self._channel,
             text=f":pr: *PR #{pr_number} opened* for <{state.ticket_url}|{state.ticket_id}>\n"
-                 f"<{pr_url}|View PR> — Reviewers: {', '.join(f'@{r}' for r in reviewers) or 'none assigned'}",
+                 f"<{pr_url}|View PR> - Reviewers: {', '.join(f'@{r}' for r in reviewers) or 'none assigned'}",
         )
 
         state.record_step(
@@ -119,7 +119,7 @@ class PRAgent:
     def _generate_pr_body(self, state: TicketState) -> str:
         """Use LLM to write the PR description."""
         prompt = f"""
-Ticket: {state.ticket_id} — {state.title}
+Ticket: {state.ticket_id} - {state.title}
 Jira URL: {state.ticket_url}
 
 Description:
@@ -150,7 +150,7 @@ Implementation Plan:
         Determine reviewers from the CODEOWNERS file.
         Returns GitHub usernames (without the @ prefix).
 
-        TODO: implement smarter logic — match changed file paths against CODEOWNERS patterns.
+        TODO: implement smarter logic - match changed file paths against CODEOWNERS patterns.
         """
         codeowners = self._github.list_codeowners(state.repo_full_name, branch=state.base_branch)
         all_owners: set[str] = set()

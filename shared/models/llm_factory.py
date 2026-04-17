@@ -1,6 +1,6 @@
 """
 LLM provider abstraction.
-All agents use this factory — swap models centrally without touching agent code.
+All agents use this factory - swap models centrally without touching agent code.
 """
 
 from enum import Enum

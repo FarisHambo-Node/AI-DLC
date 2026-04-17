@@ -1,4 +1,4 @@
-# AI-DLC — Local Development Stack
+# AI-DLC - Local Development Stack
 # ----------------------------------
 # Runs the full pipeline locally.
 # Secrets come from .env.local (NOT from Vault in local mode).

@@ -1,4 +1,4 @@
-# AI-DLC — System Architecture
+# AI-DLC - System Architecture
 
 > How the platform actually works: from a chat message to deployed code.
 
@@ -8,7 +8,7 @@
 
 The user talks to the system through a **chat interface**. That single message kicks off an orchestration engine on the backend that breaks the work into **queues**, assigns agents to items in each queue, and surfaces everything back on the **frontend as live task state**.
 
-Engineers don't run agents manually. They don't trigger pipelines. They type what they want, review what the system proposes, approve or reject it, and watch it move through the pipeline. Human involvement is deliberate and minimal — exactly where judgment is needed, not everywhere.
+Engineers don't run agents manually. They don't trigger pipelines. They type what they want, review what the system proposes, approve or reject it, and watch it move through the pipeline. Human involvement is deliberate and minimal - exactly where judgment is needed, not everywhere.
 
 ```
 User types in chat
@@ -43,7 +43,7 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 
 **What happens:**
 - The **Document Agent** reads the business requirement text input, writes a short technical implementation plan, and produces structured ticket proposals (title, description, acceptance criteria, story points, labels).
-- Multiple tickets can be proposed from a single message — a feature request might break into 3 tickets automatically.
+- Multiple tickets can be proposed from a single message - a feature request might break into 3 tickets automatically.
 - All proposed tickets land in this queue in a `pending_review` state.
 
 **Human gate:**
@@ -59,13 +59,13 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 
 **What happens:**
 - The **Coding Agent** picks up the ticket, creates a feature branch, and implements the solution.
-- Multiple Coding Agents can work in parallel — the number is configurable per project.
+- Multiple Coding Agents can work in parallel - the number is configurable per project.
 - The **Testing Agent** runs alongside and generates unit + integration + E2E test cases. It actively looks for edge cases and failure paths, not just happy paths.
 - If the Testing Agent finds something it can't resolve, it alerts the Document Agent and can flag the ticket for human input before continuing.
 
 **Human gate:**
-- Tech lead reviews the implementation plan before coding starts (configurable — can be skipped for low-risk tickets).
-- Coding output lands in the next queue — engineers don't approve individual commits, they approve the PR.
+- Tech lead reviews the implementation plan before coding starts (configurable - can be skipped for low-risk tickets).
+- Coding output lands in the next queue - engineers don't approve individual commits, they approve the PR.
 
 ---
 
@@ -74,7 +74,7 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 **What goes in:** Feature branches where coding + automated test generation is complete.
 
 **What happens:**
-- The **Versioning/Review Agent** opens a Pull Request with a structured description (summary, changes, acceptance criteria coverage, test results). Afterwards, it performs an automated first-pass review — security, performance, missing error handling, style — and posts inline PR comments.
+- The **Versioning/Review Agent** opens a Pull Request with a structured description (summary, changes, acceptance criteria coverage, test results). Afterwards, it performs an automated first-pass review - security, performance, missing error handling, style - and posts inline PR comments.
 - The **Testing Agent** runs the full suite against a preview/staging environment and generates a QA report.
 
 **Human gate:**
@@ -93,12 +93,12 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
   - Deploy to **test environment** (automatic)
   - Deploy to **UAT environment** (after test passes)
   - Deploy to **production** (explicit human approval only)
-- Each environment is a separate step — the DevOps Agent does not skip stages.
+- Each environment is a separate step - the DevOps Agent does not skip stages.
 - Jira ticket status is updated automatically at each deployment step.
 - If a deployment fails, the DevOps Agent captures logs, attempts a diagnosis, and alerts the responsible engineer in Slack.
 
 **Human gate:**
-- Production deployment is always explicit — a named human must approve it via the frontend or Slack.
+- Production deployment is always explicit - a named human must approve it via the frontend or Slack.
 - UAT can be configured as automatic or gated per project.
 
 ---
@@ -107,7 +107,7 @@ Queues are the backbone of the system. Every piece of work lives in a queue. The
 
 A project can have **up to N concurrent flows** running at the same time (default: 3, configurable).
 
-A **flow** is one end-to-end pipeline run — from a set of tickets through to deployment. Multiple flows allow:
+A **flow** is one end-to-end pipeline run - from a set of tickets through to deployment. Multiple flows allow:
 - Feature A and Feature B being coded in parallel by separate Coding Agent instances
 - A bugfix flow running alongside a feature flow
 - Different developers working on different parts of the backlog simultaneously without blocking each other
@@ -145,9 +145,9 @@ Owns the entire deployment pipeline. Manages GitHub Actions, ArgoCD (or equivale
 ### Agent Communication
 
 Every agent can:
-- **Alert other agents** — e.g., Testing Agent finds a missing requirement → alerts Document Agent to update the ticket
-- **Alert humans** — via Slack or the frontend notification system — when it needs input it cannot resolve itself
-- **Block and wait** — rather than making a bad decision, an agent pauses its queue item and surfaces a question to the appropriate person
+- **Alert other agents** - e.g., Testing Agent finds a missing requirement → alerts Document Agent to update the ticket
+- **Alert humans** - via Slack or the frontend notification system - when it needs input it cannot resolve itself
+- **Block and wait** - rather than making a bad decision, an agent pauses its queue item and surfaces a question to the appropriate person
 
 This means the system degrades gracefully: if an agent hits an edge case it can't handle, it stops and asks rather than producing broken output silently.
 
@@ -157,17 +157,17 @@ This means the system degrades gracefully: if an agent hits an edge case it can'
 
 The backend is responsible for:
 
-1. **Orchestration engine** — starts, pauses, resumes, and stops agent runs. Manages queue transitions. Enforces human gate logic (don't proceed without approval).
-2. **Queue management** — persists queue state in Redis. Every item in every queue has a status (`pending`, `in_progress`, `waiting_human`, `done`, `failed`) and an owner (which agent instance is handling it).
-3. **Agent lifecycle** — spins up agent containers per flow, passes them the right context, collects their outputs, and decides what happens next.
-4. **Non-agentic features** — authentication, third-party integrations (Jira, GitHub/GitLab, Slack, Sentry), secret management, webhook receivers.
-5. **WebSocket / SSE endpoint** — pushes live queue state updates to the frontend so the UI reflects agent activity in real time without polling.
+1. **Orchestration engine** - starts, pauses, resumes, and stops agent runs. Manages queue transitions. Enforces human gate logic (don't proceed without approval).
+2. **Queue management** - persists queue state in Redis. Every item in every queue has a status (`pending`, `in_progress`, `waiting_human`, `done`, `failed`) and an owner (which agent instance is handling it).
+3. **Agent lifecycle** - spins up agent containers per flow, passes them the right context, collects their outputs, and decides what happens next.
+4. **Non-agentic features** - authentication, third-party integrations (Jira, GitHub/GitLab, Slack, Sentry), secret management, webhook receivers.
+5. **WebSocket / SSE endpoint** - pushes live queue state updates to the frontend so the UI reflects agent activity in real time without polling.
 
 ```
-REST API          — user actions (approve, reject, submit input)
-WebSocket / SSE   — live queue state to FE (agent started, item moved, human gate triggered)
-Webhook receivers — GitHub, Jira, Slack events → orchestrator
-Queue workers     — pull items from Redis queues, dispatch to agent containers
+REST API          - user actions (approve, reject, submit input)
+WebSocket / SSE   - live queue state to FE (agent started, item moved, human gate triggered)
+Webhook receivers - GitHub, Jira, Slack events → orchestrator
+Queue workers     - pull items from Redis queues, dispatch to agent containers
 ```
 
 ---
@@ -184,27 +184,27 @@ The frontend has two main surfaces:
 ### Orchestration Panel (modal / side panel)
 Triggered automatically when the orchestrator starts a new flow. Shows:
 
-- **Queue tabs** — Requirements | Implementation | Testing | Deployment
-- **Per-item cards** — each ticket/task showing: current status, which agent owns it, elapsed time, last action
-- **Agent status indicators** — how many agents are active, which are idle, which are blocked
-- **Human gate prompts** — inline approve/reject/edit UI without leaving the panel
-- **Live log feed** — real-time output from the active agent (optional, for developers who want to see what's happening)
+- **Queue tabs** - Requirements | Implementation | Testing | Deployment
+- **Per-item cards** - each ticket/task showing: current status, which agent owns it, elapsed time, last action
+- **Agent status indicators** - how many agents are active, which are idle, which are blocked
+- **Human gate prompts** - inline approve/reject/edit UI without leaving the panel
+- **Live log feed** - real-time output from the active agent (optional, for developers who want to see what's happening)
 
-The panel does not require a page refresh — all updates arrive over WebSocket.
+The panel does not require a page refresh - all updates arrive over WebSocket.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  ORCHESTRATION — my-app                        3 flows active │
+│  ORCHESTRATION - my-app                        3 flows active │
 ├─────────────┬──────────────────┬─────────────┬───────────────┤
 │ Requirements│ Implementation   │ Testing     │ Deployment    │
 ├─────────────┴──────────────────┴─────────────┴───────────────┤
 │                                                               │
 │  [PROJ-101]  Add login page              ● In Progress        │
-│  Coding Agent #1 — branch: feature/proj-101-add-login        │
+│  Coding Agent #1 - branch: feature/proj-101-add-login        │
 │  Started 4m ago                                               │
 │                                                               │
 │  [PROJ-105]  Password reset flow         ⏸ Waiting: Human    │
-│  QA report ready — [ Review ] [ Approve ] [ Request Changes ] │
+│  QA report ready - [ Review ] [ Approve ] [ Request Changes ] │
 │                                                               │
 │  [PROJ-108]  Bug: null pointer on login  ✓ UAT deployed       │
 │  [ Approve Production Deploy ]                                │
@@ -233,7 +233,7 @@ Human gates, agent count, and deployment environments are the three most commonl
 
 ## Context & Storage
 
-Agents need context to work well — existing codebase patterns, previous ticket decisions, prior QA findings. Context is stored and retrieved in two ways:
+Agents need context to work well - existing codebase patterns, previous ticket decisions, prior QA findings. Context is stored and retrieved in two ways:
 
 | Context Type | Storage | Notes |
 |---|---|---|
@@ -249,7 +249,7 @@ Context strategy (local vs cloud) is set per project at setup time based on proj
 
 ## Third-Party Integrations
 
-All third-party credentials are managed by the backend — never stored on the frontend or in agent prompts. The application acts as the secure proxy for every external service.
+All third-party credentials are managed by the backend - never stored on the frontend or in agent prompts. The application acts as the secure proxy for every external service.
 
 | Integration | Used by | Auth method |
 |---|---|---|
@@ -259,7 +259,7 @@ All third-party credentials are managed by the backend — never stored on the f
 | **Sentry** | Feedback Agent | Auth Token (Vault) |
 | **ArgoCD / K8s** | DevOps Agent | Service Account Token (Vault) |
 
-Switching from GitHub to GitLab (or adding both) is handled at the integration adapter layer — agents call the same internal API regardless of which VCS is configured.
+Switching from GitHub to GitLab (or adding both) is handled at the integration adapter layer - agents call the same internal API regardless of which VCS is configured.
 
 ---
 
@@ -267,8 +267,8 @@ Switching from GitHub to GitLab (or adding both) is handled at the integration a
 
 The number of active agents directly maps to LLM API cost and infrastructure cost. The configuration layer makes this explicit:
 
-- **Minimal setup** — 1 flow, 1 Coding Agent, Document + DevOps only → lowest cost, sequential processing
-- **Standard setup** — 3 flows, 2 Coding Agents each, all agent types → typical team usage
-- **Enterprise setup** — N flows, configurable per project, dedicated agent pools
+- **Minimal setup** - 1 flow, 1 Coding Agent, Document + DevOps only → lowest cost, sequential processing
+- **Standard setup** - 3 flows, 2 Coding Agents each, all agent types → typical team usage
+- **Enterprise setup** - N flows, configurable per project, dedicated agent pools
 
 This means the pricing model can be tiered around `max_concurrent_flows × agent_types_enabled`, which is a natural and explainable metric for clients.

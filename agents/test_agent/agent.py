@@ -26,10 +26,10 @@ You are the Test Generation Agent in an AI-augmented SDLC pipeline.
 You will receive the implementation code for a feature and the ticket's acceptance criteria.
 
 Generate a comprehensive test suite covering:
-1. Happy path — each acceptance criterion has at least one passing test
-2. Edge cases — null/empty inputs, boundary values, max lengths
-3. Failure paths — invalid auth, missing permissions, bad request formats, DB errors
-4. Integration — if there are API endpoints, test request/response contracts
+1. Happy path - each acceptance criterion has at least one passing test
+2. Edge cases - null/empty inputs, boundary values, max lengths
+3. Failure paths - invalid auth, missing permissions, bad request formats, DB errors
+4. Integration - if there are API endpoints, test request/response contracts
 
 Framework detection:
 - Python project → use pytest with fixtures
@@ -124,12 +124,12 @@ class TestAgent:
                 content, _ = github.get_file(repo, file["filename"], branch=feature_branch)
         """
         # TODO: implement GitHub compare + multi-file read
-        return f"[Implemented files from branch {state.feature_branch} — file reader not yet connected]"
+        return f"[Implemented files from branch {state.feature_branch} - file reader not yet connected]"
 
     def _generate_tests(self, state: TicketState, implemented_code: str) -> list[dict]:
         """Invoke LLM to generate the test suite."""
         prompt_content = f"""
-Ticket: {state.ticket_id} — {state.title}
+Ticket: {state.ticket_id} - {state.title}
 
 Acceptance Criteria:
 {chr(10).join(f'- {ac}' for ac in state.acceptance_criteria)}

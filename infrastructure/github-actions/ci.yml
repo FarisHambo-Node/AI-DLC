@@ -91,7 +91,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Runs only on main — pushes image and deploys to staging
+  # Runs only on main - pushes image and deploys to staging
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest

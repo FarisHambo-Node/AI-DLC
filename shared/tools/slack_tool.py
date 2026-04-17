@@ -88,7 +88,7 @@ class SlackTool:
                 ],
             },
         ]
-        return self.notify_rich(channel, blocks, text=f"Approval needed for {ticket_id} — {gate_name}")
+        return self.notify_rich(channel, blocks, text=f"Approval needed for {ticket_id} - {gate_name}")
 
     def update_approval_message(self, channel: str, ts: str, approved: bool, approver: str) -> None:
         """Replace the approval buttons with a confirmation after decision."""

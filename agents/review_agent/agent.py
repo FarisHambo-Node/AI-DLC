@@ -62,10 +62,10 @@ class ReviewAgent:
             state: TicketState with pr_number populated.
 
         Returns:
-            TicketState (unchanged — review is posted directly to GitHub).
+            TicketState (unchanged - review is posted directly to GitHub).
         """
         if not state.pr_number:
-            logger.warning("ReviewAgent: no PR number in state — skipping")
+            logger.warning("ReviewAgent: no PR number in state - skipping")
             return state
 
         logger.info("ReviewAgent: reviewing PR #%d for %s", state.pr_number, state.ticket_id)
@@ -122,10 +122,10 @@ class ReviewAgent:
         # Truncate very large diffs to fit context window
         max_diff_chars = 60_000
         if len(diff) > max_diff_chars:
-            diff = diff[:max_diff_chars] + "\n\n[diff truncated — too large]"
+            diff = diff[:max_diff_chars] + "\n\n[diff truncated - too large]"
 
         prompt = f"""
-Ticket: {state.ticket_id} — {state.title}
+Ticket: {state.ticket_id} - {state.title}
 
 Acceptance Criteria:
 {chr(10).join(f'- {ac}' for ac in state.acceptance_criteria)}
