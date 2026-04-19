@@ -1,99 +1,78 @@
 # AI-DLC Agent Configuration
-# ----------------------------
-# Control which agents are active, which LLM they use, and gate timeouts.
+# -----------------------------------------------------------------------------
+# Five agent types, each owning a slice of the pipeline. Each agent is a
+# HarnessRuntime instance bound to a restricted skill list and adapter set.
+# Model selection lives in model_routing.yaml (per task type, not per agent).
 
 project:
   jira_project_key: "PROJ"
   github_org: "my-org"
   default_repo: "my-org/my-app"
   base_branch: "main"
+  project_spec_path: "./project-spec"
 
 agents:
-  intake_agent:
+  document_agent:
     enabled: true
-    llm_profile: sonnet
-    notify_channel: "#dev-agents"
-    jira_issue_type: "Story"
+    skills:
+      - requirements_parser
+      - incident_triage
+    adapters: [jira, project_spec, knowledge_graph]
 
-  planning_agent:
+  coding_agent:
     enabled: true
-    llm_profile: sonnet
-    max_subtasks: 5
-
-  code_agent:
-    enabled: true
-    llm_profile: sonnet
+    skills:
+      - implement_feature
+    adapters: [github, knowledge_graph, vector_store, project_spec]
     max_files_per_commit: 10
-    max_retries: 3
     branch_prefix: "feature"
 
-  test_agent:
+  testing_agent:
     enabled: true
-    llm_profile: sonnet
-    frameworks:
-      - jest        # JavaScript/TypeScript
-      - pytest      # Python
-      - playwright  # E2E
+    skills:
+      - test_generation
+      - security_scan_review   # runs under judge-jury
+    adapters: [github, semgrep, snyk, trivy, syft_cosign]
     min_coverage_pct: 80
+    block_on_critical_finding: true
 
-  pr_agent:
+  versioning_agent:
     enabled: true
-    llm_profile: sonnet
-    labels:
-      - ai-generated
-      - needs-review
-    max_reviewers: 2
-
-  review_agent:
-    enabled: true
-    llm_profile: sonnet
+    skills:
+      - pr_review
+    adapters: [github, knowledge_graph]
     max_diff_chars: 60000
-    post_inline_comments: true
 
-  cicd_agent:
+  devops_agent:
     enabled: true
-    llm_profile: haiku
-    staging_env: "staging"
-    production_env: "production"
-    deployment_strategy: "canary"  # canary | rolling | recreate
-
-  qa_agent:
-    enabled: true
-    llm_profile: sonnet
-    run_e2e: true
-    run_api_tests: true
-    block_on_critical_failure: true
-
-  bugfix_agent:
-    enabled: true
-    llm_profile: sonnet
-    branch_prefix: "fix"
-
-  feedback_agent:
-    enabled: true
-    llm_profile: haiku               # cheap - runs hourly
-    sentry_project: "my-app"
-    schedule_hours: 1
-    on_call_channel: "#on-call"
-    dev_channel: "#dev-agents"
+    skills:
+      - deployment_pipeline
+      - incident_triage
+    adapters: [github, argocd, sentry, slack]
+    environments: [test, uat, production]
 
 human_gates:
-  pm_review:
+  requirements_approval:
     timeout_hours: 48
     reminder_hours: 24
-    on_timeout: "move_to_backlog"    # move_to_backlog | auto_approve | escalate
-
-  tech_lead_review:
-    timeout_hours: 24
-    reminder_hours: 12
-    on_timeout: "escalate"
+    on_timeout: move_to_backlog
 
   pr_review:
     timeout_hours: 24
     reminder_hours: 8
-    on_timeout: "escalate"
+    on_timeout: escalate
     min_approvals: 1
 
-  prod_deploy:
-    timeout_hours: null             # null = no timeout - must be explicit
-    on_timeout: "block"
+  production_deploy:
+    timeout_hours: null
+    on_timeout: block
+
+architectural_review:
+  # Mode 2 HIT — strategic, not per-item
+  cadence: per_release       # per_release | weekly | monthly
+  reviewers: [tech_lead, product_lead]
+  indicators:
+    - spec_vs_graph_drift
+    - repeat_failure_heatmap
+    - cost_trend
+    - agent_utilization

@@ -1,32 +1,15 @@
 # AI-DLC - Local Development Stack
-# ----------------------------------
-# Runs the full pipeline locally.
-# Secrets come from .env.local (NOT from Vault in local mode).
+# ---------------------------------------------------------------------------
+# One backend service (orchestrator + queues + API). Agents are NOT separate
+# containers — they run as tasks inside the backend via harness.runtime.
 #
 # Usage:
 #   cp .env.example .env.local
-#   # fill in your keys
 #   docker compose up
-
-version: "3.9"
-
-x-agent-base: &agent-base
-  build:
-    context: .
-    dockerfile: infrastructure/docker/Dockerfile.agent
-  env_file: .env.local
-  depends_on:
-    redis:
-      condition: service_healthy
-  networks:
-    - ai-dlc
-  restart: unless-stopped
 
 services:
 
-  # ---------------------------------------------------------------------------
-  # Infrastructure
-  # ---------------------------------------------------------------------------
+  # --- Infrastructure ---
 
   redis:
     image: redis:7-alpine
@@ -36,79 +19,44 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    networks: [ai-dlc]
 
-  # ---------------------------------------------------------------------------
-  # Webhook receivers (single FastAPI app exposing all webhook routes)
-  # ---------------------------------------------------------------------------
+  neo4j:
+    image: neo4j:5-community
+    ports: ["7474:7474", "7687:7687"]
+    environment:
+      NEO4J_AUTH: "neo4j/localpassword"
+    volumes:
+      - neo4j_data:/data
 
-  webhook-server:
-    <<: *agent-base
-    command: uvicorn orchestration.webhooks.main:app --host 0.0.0.0 --port 8000 --reload
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: ai_dlc
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ai_dlc
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # --- Backend (orchestrator, queues, API, webhooks) ---
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file: .env.local
     ports: ["8000:8000"]
     volumes:
-      - .:/app   # hot reload in dev
-    environment:
-      APP_ENV: local
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_started
+      postgres:
+        condition: service_started
 
-  # ---------------------------------------------------------------------------
-  # Agents (each runs as a separate service)
-  # ---------------------------------------------------------------------------
-
-  intake-agent:
-    <<: *agent-base
-    command: python -m agents.intake_agent.main
-    environment:
-      AGENT_NAME: intake-agent
-
-  planning-agent:
-    <<: *agent-base
-    command: python -m agents.planning_agent.main
-    environment:
-      AGENT_NAME: planning-agent
-
-  code-agent:
-    <<: *agent-base
-    command: python -m agents.code_agent.main
-    environment:
-      AGENT_NAME: code-agent
-
-  test-agent:
-    <<: *agent-base
-    command: python -m agents.test_agent.main
-    environment:
-      AGENT_NAME: test-agent
-
-  pr-agent:
-    <<: *agent-base
-    command: python -m agents.pr_agent.main
-    environment:
-      AGENT_NAME: pr-agent
-
-  review-agent:
-    <<: *agent-base
-    command: python -m agents.review_agent.main
-    environment:
-      AGENT_NAME: review-agent
-
-  cicd-agent:
-    <<: *agent-base
-    command: python -m agents.cicd_agent.main
-    environment:
-      AGENT_NAME: cicd-agent
-
-  qa-agent:
-    <<: *agent-base
-    command: python -m agents.qa_agent.main
-    environment:
-      AGENT_NAME: qa-agent
-
-  feedback-agent:
-    <<: *agent-base
-    command: python -m agents.feedback_agent.main
-    environment:
-      AGENT_NAME: feedback-agent
-
-networks:
-  ai-dlc:
-    driver: bridge
+volumes:
+  neo4j_data:
+  pg_data:

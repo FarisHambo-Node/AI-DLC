@@ -1,0 +1,54 @@
+# Model Routing
+# -----------------------------------------------------------------------------
+# Per-task model tier selection. The harness reads this before every task to
+# pick the right model for the job. Tiers map to concrete models in providers
+# (see harness/model_router.py).
+#
+# Tiers:
+#   - small   : cheap, fast, simple classifications
+#   - medium  : default for most authoring tasks
+#   - large   : complex reasoning, critical decisions
+#   - judge_jury : two models independently, third breaks ties
+
+providers:
+  small:
+    provider: anthropic
+    model: claude-3-5-haiku-latest
+  medium:
+    provider: anthropic
+    model: claude-sonnet-4-5-latest
+  large:
+    provider: anthropic
+    model: claude-opus-4-latest
+  judge_jury:
+    jurors:
+      - { provider: anthropic, model: claude-sonnet-4-5-latest }
+      - { provider: openai,    model: gpt-4o }
+    tiebreaker:
+      provider: anthropic
+      model: claude-opus-4-latest
+
+task_tiers:
+  # Document Agent
+  requirements_parsing: medium
+  incident_triage: medium
+
+  # Coding Agent
+  feature_implementation: large
+  bugfix_implementation: medium
+
+  # Testing Agent
+  test_generation: medium
+  security_scan_review: judge_jury       # explicit per Prakash's request
+
+  # Versioning Agent
+  pr_review_first_pass: medium
+
+  # DevOps Agent
+  deployment_plan: small
+  rollback_plan: medium
+
+budgets:
+  cost_budget_per_flow_usd: 5.00
+  cost_soft_warning_usd: 3.00
+  daily_project_budget_usd: 100.00
