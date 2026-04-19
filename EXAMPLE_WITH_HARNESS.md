@@ -213,6 +213,40 @@ Implementation Queue
 
 # Step 4 - Implementation Queue
 
+## Task Contract — what the agent actually receives
+
+Before the Coding Agent runs, the orchestrator hands it a strict task contract. This is what makes the handoff deterministic — no guessing at inputs or "done":
+
+```yaml
+task:
+  id: PROJ-101-impl
+  type: implementation
+  parent_ref: PROJ-101
+  model_tier: large                 # Sonnet / GPT-4o
+  max_duration: 2h
+
+  inputs:
+    ticket_ref: PROJ-101
+    branch_base: main
+    context_refs:
+      - project-spec/architecture.md#auth
+      - project-spec/api-contracts/auth.yaml
+      - graph_query: "functions that call user_lookup"
+      - graph_query: "modules that import session_store"
+
+  outputs_expected:
+    - branch_name: string
+    - commit_sha: string
+    - changed_files: string[]
+    - test_files_created: string[]
+
+  acceptance_criteria:
+    - all_ticket_criteria_covered: true
+    - no_security_regression: true
+    - test_coverage_delta: ">= 0"
+    - matches_code_style: true
+```
+
 ## Coding Agent Container Executes
 
 Purpose:
@@ -225,12 +259,15 @@ Implement the approved feature inside the repository.
 
 The Coding Agent:
 
+* validates task contract inputs before starting
 * creates feature branch
 * reads Jira ticket context
+* queries Knowledge Graph for call sites, downstream dependencies, affected tests
 * implements feature code
-* follows repository conventions
+* follows repository conventions from Project Spec
 * prepares commit structure
 * coordinates with testing agent
+* verifies outputs against acceptance criteria before marking complete
 
 Example:
 
@@ -414,9 +451,20 @@ It loads:
 
 ```
 scan output (SAST findings, CVE list, image scan report)
-project security policy
+project security policy (from Project Spec: compliance.md, constraints.md)
 severity classification rules
 remediation patterns
+```
+
+## Judge-jury — why this step is special
+
+Security scan interpretation is one of the two tasks (the other is architectural review) where we use the **judge-jury model pattern**, because a single-model hallucination could greenlight a vulnerable release or block a safe one:
+
+```
+Model A (Sonnet)  → reads scan output + policy, produces recommendation + reasoning
+Model B (GPT-4o)  → independently reviews A's recommendation against same inputs
+  ├─ both agree             → proceed with recommendation
+  └─ disagree               → escalate to human with both recommendations side by side
 ```
 
 The LLM interprets each finding and produces:
