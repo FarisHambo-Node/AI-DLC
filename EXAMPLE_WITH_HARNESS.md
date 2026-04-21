@@ -215,7 +215,9 @@ Implementation Queue
 
 ## Task Contract — what the agent actually receives
 
-Before the Coding Agent runs, the orchestrator hands it a strict task contract. This is what makes the handoff deterministic — no guessing at inputs or "done":
+Before the Coding Agent runs, the orchestrator hands it a strict task contract. This is what makes the handoff deterministic — no guessing at inputs or "done".
+
+> **Where does the contract live?** The contract is task-level, not agent-level. It is owned by the backend orchestrator and travels inside the queue message. `owner_agent: coding_agent` names an agent *type*; any Coding Agent instance can claim it. That means agent containers stay stateless, and if one dies mid-task another resumes with the same contract. See `ARCHITECTURE_with_HARNESS.md` → *Task Contract → Ownership* for the trade-offs and open questions on this.
 
 ```yaml
 task:

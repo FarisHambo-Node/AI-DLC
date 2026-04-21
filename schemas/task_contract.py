@@ -4,6 +4,29 @@ Task Contract — the schema every queue item follows.
 No agent receives work without a validated TaskContract. No agent marks work
 done without its outputs passing the acceptance_criteria in the contract.
 This is what keeps multi-agent flows from drifting or stalling.
+
+Ownership model (explicit, because the question comes up):
+---------------------------------------------------------
+The TaskContract is *task-level*, not agent-level. It is owned by the backend
+orchestrator and persisted with the queue item. Agent containers are stateless
+workers that *claim* contracts whose `owner_agent` type matches their own.
+
+Implications:
+    - `owner_agent` is an AgentType (role), not an agent instance id.
+    - Any agent instance of the matching type can pick up the contract.
+    - If an agent instance dies mid-task, another instance of the same type
+      resumes using the same contract + `runtime_state`.
+    - Contracts are immutable once claimed. If an agent finds the inputs
+      insufficient, it escalates rather than amending its own contract.
+
+Open design question (not yet settled — revisit at architectural review):
+    - Should some task types allow multiple candidate agent types, with
+      routing decided at claim time rather than task-creation time?
+    - Should agents be able to propose contract amendments via a human gate,
+      instead of hard-escalating?
+
+See ARCHITECTURE_with_HARNESS.md -> "Task Contract -> Ownership" for the
+narrative version of this discussion.
 """
 
 from __future__ import annotations

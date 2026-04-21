@@ -93,6 +93,32 @@ task:
 
 Without a discrete, machine-readable contract, agents either stall (unclear inputs) or drift (unclear outputs). Every downstream agent validates upstream outputs against the schema before starting. Every human gate shows the schema's acceptance criteria alongside the agent's output, so reviewers know what "good" looks like.
 
+**Ownership — where does the Task Contract actually live?**
+
+This is a design question worth being explicit about, because the answer shapes how agents are built.
+
+*Our current position:* **the Task Contract is task-level, not agent-level.** The contract lives with the work item as it moves through queues; agent containers are stateless workers that *claim* contracts whose `owner_agent` type matches their own. Concretely:
+
+- The contract is persisted by the backend orchestrator and travels inside the queue message. It is not stored inside an agent.
+- `owner_agent: coding_agent` names an **agent type**, not a specific agent instance. Any Coding Agent container can pull the contract; if one crashes mid-task, another resumes using the same contract and the task's `runtime_state`.
+- Multiple agent instances of the same type can exist in parallel; the contract is the synchronisation point between them and the queue.
+
+*Trade-offs we made (and that are worth pressure-testing):*
+
+| Decision | Why we chose it | What we give up |
+|---|---|---|
+| Contract is declared at task creation (by the upstream agent), not by the executing agent | Keeps handoffs predictable; the upstream agent knows what "done" means before it asks for the work | Executing agent can't renegotiate inputs if it discovers the contract under-specifies the work — it must escalate instead |
+| Each task has exactly one `owner_agent` *type* | Simpler routing; easier to reason about responsibilities | A task like "triage this incident" that could realistically be done by either Document Agent or DevOps Agent forces a hard call at design time, not at runtime |
+| Contract is immutable once claimed | Auditability — you can always answer "what were you asked to do and what were the criteria" | Agents can't patch their own contract; any change requires a new contract and escalation |
+
+*Open questions worth aligning on:*
+
+1. Should certain task types allow multiple `owner_agent` candidates (with routing logic at claim time), or should the agent type always be fixed upfront?
+2. Should agents be able to propose contract amendments that get human-gated, rather than hard-escalating?
+3. Where should team-specific contract fields live — inside the core schema, or in a per-project overlay that the orchestrator merges in?
+
+These are not blockers; they're the kind of question we'd expect to revisit at the first architectural review after real flows run.
+
 **Risks & mitigations:**
 
 | Risk | Mitigation |
